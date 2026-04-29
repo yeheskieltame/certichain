@@ -2,7 +2,7 @@ import type { Abi, Address } from "viem";
 import certiChainAbi from "@/contracts/CertiChainABI.json";
 
 export const CERTICHAIN_ADDRESS =
-  "0xBF8F03002E91DAACC8E3597d650A4F1b2d21a39E" as Address;
+  "0x405CcCda7EFd5AC9D7ae662069359cBfca6Fac6d" as Address;
 
 export const CERTICHAIN_ABI = certiChainAbi as Abi;
 
