@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { decodeEventLog } from "viem";
 import {
@@ -45,6 +45,7 @@ export function IssueDiploma() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStep, setUploadStep] = useState<string>("");
   const [isSavingDb, setIsSavingDb] = useState(false);
+  const processedTx = useRef<string | null>(null);
 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -106,7 +107,8 @@ export function IssueDiploma() {
   }, [name, photoDataUrl, university, uuid]);
 
   useEffect(() => {
-    if (receipt.isSuccess && receipt.data) {
+    if (receipt.isSuccess && receipt.data && receipt.data.transactionHash !== processedTx.current) {
+      processedTx.current = receipt.data.transactionHash;
       let tokenId = "";
       
       for (const log of receipt.data.logs) {
