@@ -6,7 +6,7 @@ import { CertificateTable } from "@/components/CertificateTable";
 import { Database } from "lucide-react";
 
 export default function ExplorePage() {
-  const [selectedTokenId, setSelectedTokenId] = useState<string>("1");
+  const [selectedTokenId, setSelectedTokenId] = useState<string>("");
 
   const handleSelectTokenId = (id: string) => {
     setSelectedTokenId(id);

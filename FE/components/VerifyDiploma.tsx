@@ -12,59 +12,55 @@ type IjazahTuple = readonly [string, string, string];
 
 export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: string }) {
   const searchParams = useSearchParams();
-  const [verifyTokenId, setVerifyTokenId] = useState(initialTokenId);
+  const [verifyInput, setVerifyInput] = useState(initialTokenId || "");
+  const [resolvedTokenId, setResolvedTokenId] = useState<string | null>(null);
   const [loadingFromUuid, setLoadingFromUuid] = useState(false);
 
   useEffect(() => {
     // If navigating directly or URL changes with UUID
     const uuidParam = searchParams.get("uuid");
     if (uuidParam) {
-      setLoadingFromUuid(true);
-      fetch(`/api/certificates?uuid=${uuidParam}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.certificate?.tokenId) {
-            setVerifyTokenId(String(data.certificate.tokenId));
-          }
-        })
-        .catch(console.error)
-        .finally(() => setLoadingFromUuid(false));
+      setVerifyInput(uuidParam);
     }
   }, [searchParams]);
 
   // Update token ID when prop changes (from table selection)
   useEffect(() => {
-    if (initialTokenId && initialTokenId !== "1") {
-      setVerifyTokenId(initialTokenId);
+    if (initialTokenId) {
+      setVerifyInput(initialTokenId);
     }
   }, [initialTokenId]);
 
-  // If user pastes a UUID into the input, resolve it to a Token ID
+  // Resolve input to token ID
   useEffect(() => {
-    const val = verifyTokenId.trim();
-    // Check if it's a custom certificate ID (e.g. CC-2026-XXXX) or full UUID
-    if (val.startsWith("CC-") || (val.length === 36 && val.includes("-"))) {
+    const val = verifyInput.trim();
+    if (/^\d+$/.test(val)) {
+      // It's a number
+      setResolvedTokenId(val);
+    } else if (val.startsWith("CC-") || (val.length === 36 && val.includes("-"))) {
+      // It's a UUID/Cert ID
       setLoadingFromUuid(true);
+      setResolvedTokenId(null);
       fetch(`/api/certificates?uuid=${val}`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.certificate?.tokenId) {
-            setVerifyTokenId(String(data.certificate.tokenId));
-          } else {
-            // Optional: Handle case where UUID not found
+          if (data.certificate?.tokenId !== undefined && data.certificate?.tokenId !== null) {
+            setResolvedTokenId(String(data.certificate.tokenId));
           }
         })
         .catch(console.error)
         .finally(() => setLoadingFromUuid(false));
+    } else {
+      setResolvedTokenId(null);
     }
-  }, [verifyTokenId]);
+  }, [verifyInput]);
 
   const parsedTokenId = useMemo(() => {
-    if (!/^\d+$/.test(verifyTokenId.trim())) {
+    if (!resolvedTokenId || !/^\d+$/.test(resolvedTokenId)) {
       return undefined;
     }
-    return BigInt(verifyTokenId.trim());
-  }, [verifyTokenId]);
+    return BigInt(resolvedTokenId);
+  }, [resolvedTokenId]);
 
   const issuedData = useReadContract({
     address: CERTICHAIN_ADDRESS,
@@ -121,9 +117,9 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
               <FileBadge size={22} />
             </span>
             <input
-              value={verifyTokenId}
-              onChange={(event) => setVerifyTokenId(event.target.value)}
-              placeholder="Masukkan Token ID atau UUID"
+              value={verifyInput}
+              onChange={(event) => setVerifyInput(event.target.value)}
+              placeholder="Masukkan Token ID (0, 1...) atau ID Sertifikat (CC-2026-...)"
             />
           </span>
         </label>
@@ -164,7 +160,7 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
               <div className="flex items-end">
                 <a
                   className="secondary-button w-full px-5"
-                  href={tokenUrl(verifyTokenId)}
+                  href={tokenUrl(resolvedTokenId || "0")}
                   target="_blank"
                   rel="noreferrer"
                 >
