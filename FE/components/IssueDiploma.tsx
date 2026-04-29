@@ -57,7 +57,7 @@ export function IssueDiploma() {
   });
 
   useEffect(() => {
-    setUuid(uuidv4());
+    setUuid("CC-2026-" + uuidv4().slice(0, 8).toUpperCase());
   }, []);
 
   const hasMinted = useReadContract({
@@ -152,7 +152,7 @@ export function IssueDiploma() {
         })
           .then(() => {
             setFormMessage(`Ijazah berhasil dicatat onchain dengan ID: ${tokenId}. QR Code sekarang aktif!`);
-            setUuid(uuidv4()); // Reset UUID for the next mint
+            setUuid("CC-2026-" + uuidv4().slice(0, 8).toUpperCase()); // Reset UUID for the next mint
           })
           .catch(() => {
             setFormMessage(`Ijazah berhasil dicatat onchain (ID: ${tokenId}), namun gagal sinkronisasi database.`);

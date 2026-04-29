@@ -476,7 +476,7 @@ async function drawVerificationBox(ctx: CanvasRenderingContext2D, x: number, y: 
   // CC-...
   ctx.fillStyle = colorOrange;
   ctx.font = "800 24px monospace";
-  ctx.fillText(`CC-2026-${uuid.slice(0, 8).toUpperCase()}`, centerX, y + 70);
+  ctx.fillText(uuid, centerX, y + 70);
 
   // Outer orange box for QR area
   const qrBoxMargin = 40;

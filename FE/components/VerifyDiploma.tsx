@@ -42,8 +42,8 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
   // If user pastes a UUID into the input, resolve it to a Token ID
   useEffect(() => {
     const val = verifyTokenId.trim();
-    // UUIDs are 36 chars long and contain hyphens
-    if (val.length === 36 && val.includes("-")) {
+    // Check if it's a custom certificate ID (e.g. CC-2026-XXXX) or full UUID
+    if (val.startsWith("CC-") || (val.length === 36 && val.includes("-"))) {
       setLoadingFromUuid(true);
       fetch(`/api/certificates?uuid=${val}`)
         .then((res) => res.json())
