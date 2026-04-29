@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Copy, FileBadge, FileText, Loader2, Search } from "lucide-react";
+import { Check, Copy, FileBadge, FileText, Loader2, Search } from "lucide-react";
 import { useReadContract } from "wagmi";
 import { bnbSmartChainTestnet } from "@/lib/chains";
 import { CERTICHAIN_ABI, CERTICHAIN_ADDRESS, contractUrl, tokenUrl } from "@/lib/contract";
@@ -194,18 +194,33 @@ function ResultRow({
   value: string;
   copyable?: boolean;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="rounded-lg border border-[#ffd1ad] bg-white p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-sm font-extrabold text-muted">{label}</p>
         {copyable ? (
           <button
-            className="text-[#ff6b00]"
-            onClick={() => navigator.clipboard.writeText(value)}
+            className="flex items-center gap-1.5 text-[#ff6b00]"
+            onClick={handleCopy}
             aria-label={`Copy ${label}`}
             title={`Copy ${label}`}
           >
-            <Copy size={18} />
+            {copied ? (
+              <>
+                <span className="text-[10px] font-black uppercase">Copied!</span>
+                <Check size={16} />
+              </>
+            ) : (
+              <Copy size={16} />
+            )}
           </button>
         ) : null}
       </div>
