@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, Search } from "lucide-react";
 import { format } from "date-fns";
 
 type Certificate = {
@@ -17,6 +17,18 @@ export function CertificateTable({ onSelectTokenId }: { onSelectTokenId: (id: st
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCertificates = certificates.filter((cert) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (cert.name?.toLowerCase() || "").includes(query) ||
+      (cert.uuid?.toLowerCase() || "").includes(query) ||
+      (cert.walletAddress?.toLowerCase() || "").includes(query) ||
+      (cert.university?.toLowerCase() || "").includes(query) ||
+      (cert.tokenId !== null && String(cert.tokenId).includes(query))
+    );
+  });
 
   useEffect(() => {
     fetch("/api/certificates")
@@ -54,11 +66,24 @@ export function CertificateTable({ onSelectTokenId }: { onSelectTokenId: (id: st
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#ffd1ad] bg-white shadow-sm">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-[#fff8ef] text-xs font-black uppercase text-[#1f2937]">
-          <tr>
-            <th className="px-6 py-4">Nama Lulusan</th>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 rounded-lg border border-[#ffd1ad] bg-white px-4 py-2 shadow-sm">
+        <Search className="text-muted" size={20} />
+        <input
+          type="text"
+          placeholder="Cari berdasarkan Nama, Certificate ID, Wallet, atau Universitas..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-transparent p-2 outline-none font-medium"
+        />
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-[#ffd1ad] bg-white shadow-sm">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-[#fff8ef] text-xs font-black uppercase text-[#1f2937]">
+            <tr>
+              <th className="px-6 py-4">Certificate ID</th>
+              <th className="px-6 py-4">Nama Lulusan</th>
             <th className="px-6 py-4">Universitas</th>
             <th className="px-6 py-4">Token ID</th>
             <th className="px-6 py-4">Wallet Issuer</th>
@@ -67,8 +92,11 @@ export function CertificateTable({ onSelectTokenId }: { onSelectTokenId: (id: st
           </tr>
         </thead>
         <tbody className="divide-y divide-[#ffd1ad]">
-          {certificates.map((cert) => (
+          {filteredCertificates.map((cert) => (
             <tr key={cert.uuid} className="hover:bg-[#fffdf8]">
+              <td className="whitespace-nowrap px-6 py-4 font-mono text-xs font-bold text-[#ff6b00]">
+                {cert.uuid}
+              </td>
               <td className="whitespace-nowrap px-6 py-4 font-bold">
                 {cert.name || "-"}
               </td>
@@ -106,6 +134,7 @@ export function CertificateTable({ onSelectTokenId }: { onSelectTokenId: (id: st
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

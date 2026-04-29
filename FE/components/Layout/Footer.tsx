@@ -6,7 +6,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-[1880px] flex-col items-center justify-between gap-6 px-6 md:flex-row">
         <div className="flex items-center gap-3">
           <img src="/logo-devweb3-jogja.png" alt="Logo" className="h-10 w-auto object-contain" />
-          <p className="font-black text-[#0f172a]">CertiChain</p>
+          <p className="font-black text-[#0f172a]">Devweb3 Jogja</p>
         </div>
         
         <p className="text-sm font-medium text-[#4b5563]">

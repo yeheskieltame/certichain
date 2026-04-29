@@ -111,7 +111,7 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
         </div>
 
         <label className="block">
-          <span className="mb-2 block font-extrabold">Token ID</span>
+          <span className="mb-2 block font-extrabold">ID NFT / Certificate ID</span>
           <span className="field-shell">
             <span className="icon-box h-10 w-10">
               <FileBadge size={22} />
