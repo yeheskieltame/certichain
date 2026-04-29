@@ -491,10 +491,8 @@ async function drawVerificationBox(ctx: CanvasRenderingContext2D, x: number, y: 
   ctx.stroke();
 
   // Generate and draw actual QR Code
-  let verificationUrl = `https://certichain.app/explore?uuid=${uuid}`;
-  if (typeof window !== "undefined") {
-    verificationUrl = `${window.location.origin}/explore?uuid=${uuid}`;
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://certichain-lilac.vercel.app";
+  const verificationUrl = `${baseUrl}/explore?uuid=${uuid}`;
   const qrDataUrl = await getQrCodeDataUrl(verificationUrl);
   
   if (qrDataUrl) {
