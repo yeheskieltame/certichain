@@ -5,7 +5,7 @@ import { injected } from "wagmi/connectors";
 
 export const BSC_TESTNET_RPC_URL =
   process.env.NEXT_PUBLIC_BSC_TESTNET_RPC_URL ||
-  "https://data-seed-prebsc-1-s1.bnbchain.org:8545";
+  "https://bsc-testnet-rpc.publicnode.com";
 
 export const bnbSmartChainTestnet = defineChain({
   id: 97,

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { KeyRound, Loader2, LogOut, Menu, X, Home, Compass, Wallet as WalletIcon } from "lucide-react";
-import { useAccount, useConnect, useDisconnect, useChainId } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { usePrivyRuntime } from "@/components/Providers";
 import { bnbSmartChainTestnet } from "@/lib/chains";
@@ -12,6 +12,15 @@ import { bnbSmartChainTestnet } from "@/lib/chains";
 export function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isConnected, chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
+
+  // Auto-switch to BSC Testnet if on wrong chain
+  useEffect(() => {
+    if (isConnected && chainId !== bnbSmartChainTestnet.id) {
+      switchChain({ chainId: bnbSmartChainTestnet.id });
+    }
+  }, [isConnected, chainId, switchChain]);
 
   return (
     <header className="sticky top-0 z-[100] w-full px-4 pt-4 pb-2">
