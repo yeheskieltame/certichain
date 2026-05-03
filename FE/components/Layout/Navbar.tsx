@@ -45,6 +45,7 @@ export function Navbar() {
           <nav className="hidden items-center gap-1 lg:flex">
             <NavLink href="/" icon={<Home size={18} />} active={pathname === "/"} label="Issue" />
             <NavLink href="/explore" icon={<Compass size={18} />} active={pathname === "/explore"} label="Explore" />
+            <NavLink href="/faucet" icon={<KeyRound size={18} />} active={pathname === "/faucet"} label="Faucet" />
           </nav>
 
           {/* Wallet Section & Mobile Trigger */}
