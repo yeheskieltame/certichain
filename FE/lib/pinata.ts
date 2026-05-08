@@ -4,8 +4,8 @@ const UPLOAD_JSON_ENDPOINT = "/api/pinata/upload-json";
 // Public IPFS gateways for reading. Reading is intentionally decoupled from the
 // pinning provider — content addressed by CID can be fetched from any gateway
 // once at least one node has the data, so we never depend on Pinata account
-// credentials for reads.
-const DEFAULT_GATEWAYS = [
+// credentials for reads. User-provided gateways are tried first, then these.
+const PUBLIC_GATEWAYS = [
   "https://ipfs.io/ipfs/",
   "https://dweb.link/ipfs/",
   "https://cloudflare-ipfs.com/ipfs/",
@@ -17,17 +17,60 @@ function normalizeCid(cidOrUri: string) {
   return cidOrUri.replace(/^ipfs:\/\//, "").replace(/^\/?ipfs\//, "");
 }
 
+function normalizeGatewayBase(input: string): string {
+  let base = input.trim();
+  if (!base) return "";
+  if (!/^https?:\/\//i.test(base)) {
+    base = `https://${base}`;
+  }
+  try {
+    const url = new URL(base);
+    if (!url.pathname || url.pathname === "/") {
+      url.pathname = "/ipfs/";
+    } else if (!url.pathname.endsWith("/")) {
+      url.pathname += "/";
+    }
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function appendPinataToken(url: string): string {
+  const token = process.env.NEXT_PUBLIC_PINATA_GATEWAY_TOKEN;
+  if (!token) return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname.endsWith(".mypinata.cloud")) {
+      u.searchParams.set("pinataGatewayToken", token);
+      return u.toString();
+    }
+  } catch {
+    /* ignore */
+  }
+  return url;
+}
+
 function getGatewayBases(): string[] {
+  const userBases: string[] = [];
   const fromEnv = process.env.NEXT_PUBLIC_IPFS_GATEWAYS;
   if (fromEnv) {
-    const list = fromEnv
+    fromEnv
       .split(",")
-      .map((g) => g.trim())
+      .map(normalizeGatewayBase)
       .filter(Boolean)
-      .map((g) => (g.endsWith("/") ? g : g + "/"));
-    if (list.length > 0) return list;
+      .forEach((b) => userBases.push(b));
   }
-  return DEFAULT_GATEWAYS;
+  // Always include public fallbacks (de-duplicated) so a misconfigured or
+  // unavailable user gateway never breaks reads.
+  const seen = new Set(userBases);
+  for (const pub of PUBLIC_GATEWAYS) {
+    if (!seen.has(pub)) {
+      userBases.push(pub);
+      seen.add(pub);
+    }
+  }
+  return userBases;
 }
 
 export function ipfsUrl(cid: string) {
@@ -36,7 +79,7 @@ export function ipfsUrl(cid: string) {
 
 export function ipfsGatewayUrls(cidOrUri: string): string[] {
   const cid = normalizeCid(cidOrUri);
-  return getGatewayBases().map((base) => `${base}${cid}`);
+  return getGatewayBases().map((base) => appendPinataToken(`${base}${cid}`));
 }
 
 export function gatewayUrl(cidOrUri: string) {
