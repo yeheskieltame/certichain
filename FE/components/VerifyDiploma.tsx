@@ -6,7 +6,7 @@ import { useReadContract } from "wagmi";
 import { bnbSmartChainTestnet } from "@/lib/chains";
 import { CERTICHAIN_ABI, CERTICHAIN_ADDRESS, contractUrl, tokenUrl } from "@/lib/contract";
 import { useSearchParams } from "next/navigation";
-import { gatewayUrl } from "@/lib/pinata";
+import { fetchFromIpfs, ipfsGatewayUrls } from "@/lib/pinata";
 
 type IjazahTuple = readonly [string, string, string];
 
@@ -97,6 +97,16 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
 
   const verifiedIjazah = issuedData.data as IjazahTuple | undefined;
 
+  const diplomaGatewayUrls = useMemo(
+    () => (verifiedIjazah?.[2] ? ipfsGatewayUrls(verifiedIjazah[2]) : []),
+    [verifiedIjazah]
+  );
+  const [imageGatewayIndex, setImageGatewayIndex] = useState(0);
+
+  useEffect(() => {
+    setImageGatewayIndex(0);
+  }, [verifiedIjazah?.[2]]);
+
   return (
     <section id="verify" className="grid gap-6 lg:grid-cols-[430px_minmax(0,1fr)] mb-8">
       <div className="line-panel corner-cut p-6">
@@ -147,15 +157,20 @@ export function VerifyDiploma({ initialTokenId = "1" }: { initialTokenId?: strin
             <div className="flex flex-col gap-3">
               <div className="overflow-hidden rounded-lg border border-[#ffd1ad] bg-white p-3 shadow-sm">
                 <img
-                  src={gatewayUrl(verifiedIjazah[2])}
+                  src={diplomaGatewayUrls[imageGatewayIndex]}
                   alt="Diploma Preview"
                   className="w-full h-auto object-contain rounded"
+                  onError={() => {
+                    if (imageGatewayIndex < diplomaGatewayUrls.length - 1) {
+                      setImageGatewayIndex(imageGatewayIndex + 1);
+                    }
+                  }}
                 />
               </div>
               <button
                 onClick={async () => {
                   try {
-                    const response = await fetch(gatewayUrl(verifiedIjazah[2]));
+                    const response = await fetchFromIpfs(verifiedIjazah[2]);
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement("a");
